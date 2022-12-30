@@ -1,0 +1,11 @@
+{
+    "name":"GunChargePatch",
+    "author_name":"willuwontu",
+    "version_number":"0.0.3",
+    "website_url":"https://github.com/willuwontu/GunChargePatch",
+    "displayName":"GunChargePatch",
+    "description":"Makes the Gun.UseCharge field work.",
+    "dependencies": [
+        "BepInEx-BepInExPack_ROUNDS-5.4.1100"
+    ]
+}
