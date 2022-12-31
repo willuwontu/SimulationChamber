@@ -4,7 +4,7 @@ A mod to make it easy to fire other weapons
 
 <details>
 <summary>Change log</summary>
-----
+
 ### v0.0.0
 - Initial Release
 
@@ -12,6 +12,7 @@ A mod to make it easy to fire other weapons
 
 <details>
 <summary>Simulation Controller</summary>
+
 ### CreateNewSimulationWeapon()
 ```cs
 SimulatedGun CreateNewSimulationWeapon()
@@ -22,6 +23,7 @@ Creates a `SimulatedGun` for usage.
 
 <details>
 <summary>Simulated Gun</summary>
+
 ### SimulatedAttack()
 ```cs
 bool SimulatedAttack(int playerID, Vector3 spawnPos, Vector3 shootAngle, float charge, float damageM, Transform followTransform = null, bool useTransformForward = false)
