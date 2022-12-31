@@ -10,6 +10,9 @@ using UnityEngine;
 
 namespace SimulationChamber
 {
+    /// <summary>
+    /// The gun used to shoots.
+    /// </summary>
     [RequireComponent(typeof(PhotonView))]
     public class SimulatedGun : Gun, IPunInstantiateMagicCallback
     {
@@ -58,7 +61,17 @@ namespace SimulationChamber
         {
 
         }
-
+        /// <summary>
+        /// This is what you should be using to attack with.
+        /// </summary>
+        /// <param name="playerID"></param>
+        /// <param name="spawnPos"></param>
+        /// <param name="shootAngle"></param>
+        /// <param name="charge"></param>
+        /// <param name="damageM"></param>
+        /// <param name="followTransform"></param>
+        /// <param name="useTransformForward"></param>
+        /// <returns></returns>
         public bool SimulatedAttack(int playerID, Vector3 spawnPos, Vector3 shootAngle, float charge, float damageM, Transform followTransform = null, bool useTransformForward = false)
         {
             if (shootAngle == Vector3.zero)
@@ -194,6 +207,14 @@ namespace SimulationChamber
             return result;
         }
 
+        /// <summary>
+        /// This is used to initialize the bullets.
+        /// </summary>
+        /// <param name="bullet"></param>
+        /// <param name="playerID"></param>
+        /// <param name="usedNumberOfProjectiles"></param>
+        /// <param name="damageM"></param>
+        /// <param name="randomSeed"></param>
         public void FakeInit(GameObject bullet, int playerID, int usedNumberOfProjectiles, float damageM, float randomSeed)
         {
             this.spawnedAttack = bullet.GetComponent<SpawnedAttack>();
@@ -338,6 +359,9 @@ namespace SimulationChamber
         private bool useOtherGunAttackAction = false;
         private Gun attackActionGun = null;
 
+        /// <summary>
+        /// The attack action of a Simulated Gun.
+        /// </summary>
         public Action AttackAction
         {
             get
@@ -388,6 +412,10 @@ namespace SimulationChamber
 
         SpawnedAttack spawnedAttack;
 
+        /// <summary>
+        /// Clones the <seealso cref="Gun.attackAction"/> of a gun, and adds it as its own set of delegates to this gun.
+        /// </summary>
+        /// <param name="copyFromGun">The gun to copy the action from.</param>
         public void CopyAttackAction(Gun copyFromGun)
         {
             if ((Action)Traverse.Create(copyFromGun).Field("attackAction").GetValue() == null)
@@ -398,6 +426,24 @@ namespace SimulationChamber
             this.AttackAction = (Action)(((Action)Traverse.Create(copyFromGun).Field("attackAction").GetValue()).Clone());
         }
 
+        /// <summary>
+        /// Clones the <seealso cref="Gun.ShootPojectileAction"/> of a gun, and adds it as its own set of delegates to this gun.
+        /// </summary>
+        /// <param name="copyFromGun">The gun to copy the action from.</param>
+        public void CopyShootProjectileAction(Gun copyFromGun)
+        {
+            if (copyFromGun.ShootPojectileAction == null)
+            {
+                return;
+            }
+
+            this.ShootPojectileAction = (Action<GameObject>)(copyFromGun.ShootPojectileAction.Clone());
+        }
+
+        /// <summary>
+        /// Copies the stats of one gun to this one.
+        /// </summary>
+        /// <param name="copyFromGun">The gun to copy the stats of.</param>
         public void CopyGunStatsExceptActions(Gun copyFromGun)
         {
             this.ammo = copyFromGun.ammo;

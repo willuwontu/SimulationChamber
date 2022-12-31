@@ -1,11 +1,12 @@
 {
-    "name":"GunChargePatch",
+    "name":"SimulationChamber",
     "author_name":"willuwontu",
-    "version_number":"0.0.3",
+    "version_number":"0.0.0",
     "website_url":"https://github.com/willuwontu/GunChargePatch",
-    "displayName":"GunChargePatch",
+    "displayName":"SimulationChamber",
     "description":"Makes the Gun.UseCharge field work.",
     "dependencies": [
-        "BepInEx-BepInExPack_ROUNDS-5.4.1100"
+        "BepInEx-BepInExPack_ROUNDS-5.4.1100",
+		"willis81808-UnboundLib-3.2.1"
     ]
 }

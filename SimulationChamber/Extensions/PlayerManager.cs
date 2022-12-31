@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SimulationChamber.Extensions
 {
-    public static class PlayerManagerExtension
+    internal static class PlayerManagerExtension
     {
         public static Player GetRandomEnemy(this PlayerManager playerManager, Player player)
         {
