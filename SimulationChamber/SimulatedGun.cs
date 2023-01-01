@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using BepInEx.Bootstrap;
 using HarmonyLib;
 using Photon.Pun;
 using SimulationChamber.Extensions;
@@ -13,20 +14,9 @@ namespace SimulationChamber
     /// <summary>
     /// The gun used to shoots.
     /// </summary>
-    [RequireComponent(typeof(PhotonView))]
-    public class SimulatedGun : Gun, IPunInstantiateMagicCallback
+    public class SimulatedGun : Gun
     {
-        public void OnPhotonInstantiate(PhotonMessageInfo info)
-        {
-            simulationID = (string)info.photonView.InstantiationData[0];
-
-            if (!(SimulationChamber.instance.simulationWeapons.ContainsKey(simulationID)))
-            {
-                SimulationChamber.instance.simulationWeapons.Add(simulationID, this);
-            }
-        }
-
-        private string simulationID;
+        private int simulationID;
         private float usedCooldown
         {
             get
@@ -41,14 +31,10 @@ namespace SimulationChamber
 
         private void Awake()
         {
-            var view = this.GetComponent<PhotonView>();
-            if (!(view.InstantiationData != null && view.InstantiationData.Length > 0))
-            {
-                if (this.gameObject != SimulationChamber.instance.SimulatedWeaponObject)
-                {
-                    UnityEngine.GameObject.DestroyImmediate(this.gameObject);
-                }
-            }
+            this.simulationID = SimulationChamber.instance.currentCount;
+            SimulationChamber.instance.currentCount += 1;
+            SimulationChamber.instance.simulationWeapons.Add(this.simulationID, this);
+
             this.shootPosition = this.transform;
         }
 
@@ -61,6 +47,7 @@ namespace SimulationChamber
         {
 
         }
+
         /// <summary>
         /// This is what you should be using to attack with.
         /// </summary>
@@ -161,10 +148,13 @@ namespace SimulationChamber
 
                             GameObject gameObject = PhotonNetwork.Instantiate(this.projectiles[i].objectToSpawn.gameObject.name, spawnLoc, shootDir, 0, null);
 
-                            gameObject.GetComponent<PhotonView>().RPC("RPCA_SetBulletCharge", RpcTarget.All, new object[]
+                            if (Chainloader.PluginInfos.Select(plugin => plugin.Key).Contains("com.rounds.willuwontu.gunchargepatch"))
                             {
-                                charge
-                            });
+                                gameObject.GetComponent<PhotonView>().RPC("RPCA_SetBulletCharge", RpcTarget.All, new object[]
+                                {
+                                    charge
+                                }); 
+                            }
 
                             gameObject.GetComponent<PhotonView>().RPC(nameof(SimulatedBulletInit.RPCA_InitSimulatedBullet), RpcTarget.All, new object[]
                             {

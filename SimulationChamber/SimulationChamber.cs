@@ -34,9 +34,6 @@ namespace SimulationChamber
             // Use this to call any harmony patch files your mod may have
             var harmony = new Harmony(ModId);
             harmony.PatchAll();
-            //harmony.Patch(MonoBehaviour_Patch.TargetMethod(), postfix: new HarmonyMethod(typeof(MonoBehaviour_Patch), nameof(MonoBehaviour_Patch.DoTStopped)));
-
-            var _ = SimulatedWeaponObject;
         }
         void Start()
         {
@@ -69,56 +66,21 @@ namespace SimulationChamber
 
                     }
                 }
-                simulationWeapons = new Dictionary<string, SimulatedGun>();
             }
+
+            simulationWeapons = new Dictionary<int, SimulatedGun>();
+            currentCount = 0;
 
             yield break;
         }
 
-        internal Dictionary<string, SimulatedGun> simulationWeapons = new Dictionary<string, SimulatedGun>();
+        internal Dictionary<int, SimulatedGun> simulationWeapons = new Dictionary<int, SimulatedGun>();
 
-        private GameObject simulatedWeaponObject = null;
+        internal int currentCount = 0;
 
-        internal GameObject SimulatedWeaponObject
-        {
-            get
-            {
-                if (simulatedWeaponObject == null)
-                {
-                    simulatedWeaponObject = new GameObject("A_SimulatedWeapon");
-                    DontDestroyOnLoad(simulatedWeaponObject);
-                    simulatedWeaponObject.SetActive(false);
+        internal Gun DefaultGun => Resources.Load<GameObject>("Player").GetComponent<Holding>().holdable.GetComponent<Gun>();
 
-                    var view = simulatedWeaponObject.AddComponent<PhotonView>();
-                    view.Synchronization = ViewSynchronization.UnreliableOnChange;
-                    view.OwnershipTransfer = OwnershipOption.Takeover;
-                    view.observableSearch = PhotonView.ObservableSearch.AutoFindAll;
-
-                    var simGun = simulatedWeaponObject.AddComponent<SimulatedGun>();
-                    var defaultGun = Resources.Load<GameObject>("Player").GetComponent<Holding>().holdable.GetComponent<Gun>();
-                    simGun.CopyGunStatsExceptActions(defaultGun);
-                    //simGun.CopyAttackAction(defaultGun);
-                    //simGun.ShootPojectileAction = (Action<GameObject>)defaultGun.ShootPojectileAction.Clone();
-
-                    PhotonNetwork.PrefabPool.RegisterPrefab(simulatedWeaponObject.name, SimulatedWeaponObject);
-                }
-
-                return simulatedWeaponObject;
-            }
-        }
-
-        public SimulatedGun SpawnSimulationGun()
-        {
-            string id = (Guid.NewGuid()).ToString();
-            var gunObj = PhotonNetwork.Instantiate(SimulatedWeaponObject.name, Vector3.zero, Quaternion.identity, 0, new object[] { id });
-            gunObj.SetActive(true);
-            DontDestroyOnLoad(gunObj);
-            simulationWeapons[id] = gunObj.GetComponent<SimulatedGun>();
-
-            return gunObj.GetComponent<SimulatedGun>();
-        }
-
-        public SimulatedGun GetSimulationWeapon(string weaponID)
+        public SimulatedGun GetSimulationWeapon(int weaponID)
         {
             if (simulationWeapons.TryGetValue(weaponID, out SimulatedGun gun))
             {
@@ -129,27 +91,10 @@ namespace SimulationChamber
         }
     }
 
-    /// <summary>
-    /// The class to interact with for creating weapons.
-    /// </summary>
-    public static class SimulationController
-    {
-        //public static ReadOnlyCollection<SimulatedGun> AvailableWeapons => new ReadOnlyCollection<SimulatedGun>(SimulationChamber.instance.simulationWeapons.Values.ToList());
-
-        /// <summary>
-        /// Creates a simulated gun for a player to use.
-        /// </summary>
-        /// <returns>A Simulated Gun.</returns>
-        public static SimulatedGun CreateNewSimulationWeapon()
-        {
-            return SimulationChamber.instance.SpawnSimulationGun();
-        }
-    }
-
     internal class SimulatedBulletInit : MonoBehaviour
     {
         [PunRPC]
-        public void RPCA_InitSimulatedBullet(string simID, int playerID, int projNum, float damageM, float randomSeed)
+        public void RPCA_InitSimulatedBullet(int simID, int playerID, int projNum, float damageM, float randomSeed)
         {
             SimulationChamber.instance.GetSimulationWeapon(simID).FakeInit(this.gameObject, playerID, projNum, damageM, randomSeed);
         }
@@ -165,7 +110,7 @@ namespace SimulationChamber
 
         // A list of guns created for this mono saved here.
         // Ideally you'll make a pool of guns for your mod to use.
-        public static SimulatedGun[] savedGuns = new SimulatedGun[2];
+        public SimulatedGun[] savedGuns = new SimulatedGun[2];
 
         public void Start()
         {
@@ -179,13 +124,14 @@ namespace SimulationChamber
             // Checks to see if we have a saved gun already, if not, we make one.
             if (savedGuns[0] == null)
             {
-                savedGuns[0] = SimulationController.CreateNewSimulationWeapon();
+                // We spawn a new object since this allows us manipulate the gun object's position without messing with the player's gameobjest.
+                savedGuns[0] = new GameObject("X-Gun").AddComponent<SimulatedGun>();
             }
 
             // Checks to see if we have a second saved gun already, if not, we make one.
             if (savedGuns[1] == null)
             {
-                savedGuns[1] = SimulationController.CreateNewSimulationWeapon();
+                savedGuns[1] = new GameObject("Y-Gun").AddComponent<SimulatedGun>();
             }
         }
 

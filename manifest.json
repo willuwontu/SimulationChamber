@@ -1,10 +1,10 @@
 {
     "name":"SimulationChamber",
     "author_name":"willuwontu",
-    "version_number":"0.0.0",
+    "version_number":"0.0.2",
     "website_url":"https://github.com/willuwontu/GunChargePatch",
     "displayName":"SimulationChamber",
-    "description":"Makes the Gun.UseCharge field work.",
+    "description":"Adds utilities for firing guns that are not bound to a player.",
     "dependencies": [
         "BepInEx-BepInExPack_ROUNDS-5.4.1100",
 		"willis81808-UnboundLib-3.2.1"

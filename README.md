@@ -1,24 +1,18 @@
 # Simulation Chamber
 
-A mod to make it easy to fire other weapons
+A mod to make it easy to fire a gun anywhere you need it on the map.
 
 <details>
 <summary>Change log</summary>
 
+### v 0.0.2
+---
+- Fixed issues with multiplayer.
+
 ### v0.0.0
+---
 - Initial Release
 
-</details>
-
-<details>
-<summary>Simulation Controller</summary>
-
-### CreateNewSimulationWeapon()
-```cs
-SimulatedGun CreateNewSimulationWeapon()
-```
-#### Description
-Creates a `SimulatedGun` for usage.
 </details>
 
 <details>
@@ -106,7 +100,7 @@ public class MirrorSimulation : MonoBehaviour
 
     // A list of guns created for this mono saved here.
     // Ideally you'll make a pool of guns for your mod to use.
-    public static SimulatedGun[] savedGuns = new SimulatedGun[2];
+    public SimulatedGun[] savedGuns = new SimulatedGun[2];
 
     public void Start()
     {
@@ -120,13 +114,14 @@ public class MirrorSimulation : MonoBehaviour
         // Checks to see if we have a saved gun already, if not, we make one.
         if (savedGuns[0] == null)
         {
-            savedGuns[0] = SimulationController.CreateNewSimulationWeapon();
+            // We spawn a new object since this allows us manipulate the gun object's position without messing with the player's gameobjest.
+            savedGuns[0] = new GameObject("X-Gun").AddComponent<SimulatedGun>();
         }
 
         // Checks to see if we have a second saved gun already, if not, we make one.
         if (savedGuns[1] == null)
         {
-            savedGuns[1] = SimulationController.CreateNewSimulationWeapon();
+            savedGuns[1] = new GameObject("Y-Gun").AddComponent<SimulatedGun>();
         }
     }
 
