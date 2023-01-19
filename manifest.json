@@ -1,8 +1,8 @@
 {
     "name":"SimulationChamber",
     "author_name":"willuwontu",
-    "version_number":"0.0.2",
-    "website_url":"https://github.com/willuwontu/GunChargePatch",
+    "version_number":"0.0.3",
+    "website_url":"https://github.com/willuwontu/SimulationChamber",
     "displayName":"SimulationChamber",
     "description":"Adds utilities for firing guns that are not bound to a player.",
     "dependencies": [

@@ -12,7 +12,9 @@ using UnityEngine;
 namespace SimulationChamber
 {
     /// <summary>
-    /// The gun used to shoots.
+    /// The gun used to shoot.
+    /// 
+    /// Never place it on the player object.
     /// </summary>
     public class SimulatedGun : Gun
     {
@@ -100,12 +102,12 @@ namespace SimulationChamber
             }
         }
 
-        Vector3 SpawnPos 
-        { 
-            get 
-            { 
-                return (Vector3)typeof(Gun).GetField("spawnPos", BindingFlags.Default | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField).GetValue(this); 
-            } 
+        Vector3 SpawnPos
+        {
+            get
+            {
+                return (Vector3)typeof(Gun).GetField("spawnPos", BindingFlags.Default | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField).GetValue(this);
+            }
             set
             {
                 typeof(Gun).GetField("spawnPos", BindingFlags.Default | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.SetField).SetValue(this, value);
@@ -128,47 +130,50 @@ namespace SimulationChamber
                 {
                     for (int j = 0; j < currentNumberOfProjectiles; j++)
                     {
-                        if (this.CheckIsMine(playerID))
+                        for (int k = 0; k < projectiles[i].numberOfSpawns; k++)
                         {
-                            this.shootPosition.forward = shootAngle;
-
-                            var spawnLoc = spawnPos;
-
-                            if (followTransform != null)
+                            if (this.CheckIsMine(playerID))
                             {
-                                spawnLoc = followTransform.position;
+                                this.shootPosition.forward = shootAngle;
 
-                                if (useTransformAngle)
+                                var spawnLoc = spawnPos;
+
+                                if (followTransform != null)
                                 {
-                                    this.shootPosition.forward = followTransform.forward;
+                                    spawnLoc = followTransform.position;
+
+                                    if (useTransformAngle)
+                                    {
+                                        this.shootPosition.forward = followTransform.forward;
+                                    }
                                 }
-                            }
 
-                            Quaternion shootDir = this.getShootRotation(j, currentNumberOfProjectiles, charge);
+                                Quaternion shootDir = this.getShootRotation(j, currentNumberOfProjectiles, charge);
 
-                            GameObject gameObject = PhotonNetwork.Instantiate(this.projectiles[i].objectToSpawn.gameObject.name, spawnLoc, shootDir, 0, null);
+                                GameObject gameObject = PhotonNetwork.Instantiate(this.projectiles[i].objectToSpawn.gameObject.name, spawnLoc, shootDir, 0, null);
 
-                            if (Chainloader.PluginInfos.Select(plugin => plugin.Key).Contains("com.rounds.willuwontu.gunchargepatch"))
-                            {
-                                gameObject.GetComponent<PhotonView>().RPC("RPCA_SetBulletCharge", RpcTarget.All, new object[]
+                                if (Chainloader.PluginInfos.Select(plugin => plugin.Key).Contains("com.rounds.willuwontu.gunchargepatch"))
                                 {
+                                    gameObject.GetComponent<PhotonView>().RPC("RPCA_SetBulletCharge", RpcTarget.All, new object[]
+                                    {
                                     charge
-                                }); 
-                            }
+                                    });
+                                }
 
-                            gameObject.GetComponent<PhotonView>().RPC(nameof(SimulatedBulletInit.RPCA_InitSimulatedBullet), RpcTarget.All, new object[]
-                            {
+                                gameObject.GetComponent<PhotonView>().RPC(nameof(SimulatedBulletInit.RPCA_InitSimulatedBullet), RpcTarget.All, new object[]
+                                {
                                 simulationID,
                                 playerID,
                                 currentNumberOfProjectiles,
                                 damageM,
                                 UnityEngine.Random.Range(0f, 1f)
-                            });
-                        }
-                        if (this.timeBetweenBullets != 0f)
-                        {
-                            GamefeelManager.GameFeel(base.transform.up * this.shake);
-                            //this.soundGun.PlayShot(currentNumberOfProjectiles);
+                                });
+                            }
+                            if (this.timeBetweenBullets != 0f)
+                            {
+                                GamefeelManager.GameFeel(base.transform.up * this.shake);
+                                //this.soundGun.PlayShot(currentNumberOfProjectiles);
+                            }
                         }
                     }
                 }
@@ -388,7 +393,7 @@ namespace SimulationChamber
         {
             Action<GameObject> projectileAction = null;
 
-            if (this.useSelfProjectileAction) 
+            if (this.useSelfProjectileAction)
             {
                 projectileAction += this.ShootPojectileAction;
             }
