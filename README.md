@@ -7,6 +7,11 @@ A mod to make it easy to fire a gun anywhere you need it on the map.
 
 ### v 0.0.2
 ---
+- Mod ID changed to correct format.
+- Small Fixes, example made better.
+
+### v 0.0.2
+---
 - Fixed issues with multiplayer.
 
 ### v0.0.0
@@ -102,6 +107,29 @@ public class MirrorSimulation : MonoBehaviour
     // Ideally you'll make a pool of guns for your mod to use.
     public SimulatedGun[] savedGuns = new SimulatedGun[2];
 
+    public static GameObject _stopRecursionObj = null;
+
+    public static GameObject StopRecursionObj
+    {
+        get
+        {
+            if (_stopRecursionObj == null)
+            {
+                _stopRecursionObj = new GameObject("A_StopRecursion", typeof(StopRecursion));
+                DontDestroyOnLoad(_stopRecursionObj);
+            }
+            return _stopRecursionObj;
+        }
+    }
+
+    public static ObjectsToSpawn[] StopRecursionSpawn
+    {
+        get
+        {
+            return new ObjectsToSpawn[] { new ObjectsToSpawn() { AddToProjectile = StopRecursionObj } };
+        }
+    }
+
     public void Start()
     {
         // Get Player
@@ -127,6 +155,12 @@ public class MirrorSimulation : MonoBehaviour
 
     public void OnShootProjectileAction(GameObject obj)
     {
+        // If the bullet has the StopRecursion component in it somewhere, we don't want to trigger.
+        if (obj.GetComponentsInChildren<StopRecursion>().Length > 0)
+        {
+            return;
+        }
+
         /*************************************************************************
         **************************************************************************
         *** Here's where we sync our guns so that people see the same effect when
@@ -156,6 +190,7 @@ public class MirrorSimulation : MonoBehaviour
         xGun.bursts = 0;
         xGun.spread = 0f;
         xGun.evenSpread = 0f;
+        xGun.objectsToSpawn = xGun.objectsToSpawn.Concat(StopRecursionSpawn).ToArray();
 
         // Our second gun is used to mirror about the y-axis
         // We use this gun since we want to have different values on our y than our x.
@@ -173,6 +208,7 @@ public class MirrorSimulation : MonoBehaviour
         yGun.spread = 0f;
         yGun.evenSpread = 0f;
         yGun.gravity *= -1f;
+        yGun.objectsToSpawn = yGun.objectsToSpawn.Concat(StopRecursionSpawn).ToArray();
 
         /*************************************************************************
         **************************************************************************
@@ -197,6 +233,9 @@ public class MirrorSimulation : MonoBehaviour
     {
         // Remove our action when the mono is removed
         gun.ShootPojectileAction -= OnShootProjectileAction;
+
+        UnityEngine.GameObject.Destroy(savedGuns[0]);
+        UnityEngine.GameObject.Destroy(savedGuns[1]);
     }
 }
 ```
